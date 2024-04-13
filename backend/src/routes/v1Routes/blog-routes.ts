@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { verify } from "hono/jwt";
 import { ResponseDTO } from "../../dto";
 import { getPrismaClient } from "../../config/db-config";
+import { createBlogInput, updateBlogInput } from "@supersharmapunit/medium-common";
 
 const blogRoute = new Hono<{
     Bindings: {
@@ -36,6 +37,11 @@ blogRoute.use("*", async (c, next) => {
 blogRoute.post("", async (c) => {
     const prismaClient = getPrismaClient(c.env.DATABASE_URL);
     const body = await c.req.json();
+    const { success } = createBlogInput.safeParse(body);
+    if(!success) {
+        c.status(411);
+        return c.json(new ResponseDTO("request validation failed", false, "invalid inputs", null));
+    }
     try {
         const blog = await prismaClient.post.create({
             data: {
@@ -56,7 +62,11 @@ blogRoute.post("", async (c) => {
 blogRoute.put("", async (c) => {
     const prismaClient = getPrismaClient(c.env.DATABASE_URL);
     const body = await c.req.json();
-
+    const { success } = updateBlogInput.safeParse(body);
+    if(!success) {
+        c.status(411);
+        return c.json(new ResponseDTO("request validation failed", false, "invalid inputs", null));
+    }
     try {
         const blog = await prismaClient.post.update({
             where: {

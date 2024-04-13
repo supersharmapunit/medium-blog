@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { getPrismaClient } from "../../config/db-config";
 import { ResponseDTO } from "../../dto/index";
+import { signInInput, signUpInput } from "@supersharmapunit/medium-common";
 
 const userRoutes = new Hono<{
     Bindings: {
@@ -14,6 +15,11 @@ const userRoutes = new Hono<{
 userRoutes.post("/signup", async (c) => {
     const prismaClient = getPrismaClient(c.env.DATABASE_URL);
     const body = await c.req.json();
+    const { success } = signUpInput.safeParse(body);
+    if(!success) {
+        c.status(411);
+        return c.json(new ResponseDTO("request validation failed", false, "invalid inputs", null));
+    }
     try {
         const user = await prismaClient.user.create({
             data: {
@@ -36,6 +42,11 @@ userRoutes.post("/signup", async (c) => {
 userRoutes.post("/signin", async (c) => {
     const prismaClient = getPrismaClient(c.env.DATABASE_URL);
     const body = await c.req.json();
+    const { success } = signInInput.safeParse(body);
+    if(!success) {
+        c.status(411);
+        return c.json(new ResponseDTO("request validation failed", false, "invalid inputs", null));
+    }
     try {
         const user = await prismaClient.user.findUnique({
             where: {
