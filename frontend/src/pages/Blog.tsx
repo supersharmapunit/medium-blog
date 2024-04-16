@@ -9,7 +9,7 @@ export default function Blog() {
     const { loading, blog } = useBlog({
         blogId : id || ""
     });
-    if(loading) {
+    if(loading || !blog) {
         return (
             <div>
                 <Appbar />
